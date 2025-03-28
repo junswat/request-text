@@ -29,7 +29,9 @@ const DEFAULT_STRUCTURE: StructureField[] = [
   }
 ];
 
-const STORAGE_KEY = 'text_analyzer_structure';
+// GitHub Pagesのベースパスを考慮したストレージキー
+const BASE_PATH = '/request-text';
+const STORAGE_KEY = `${BASE_PATH}/text_analyzer_structure`;
 
 function App() {
   const [activeTab, setActiveTab] = useState<'structure' | 'analyze' | 'settings'>('structure');
@@ -37,21 +39,30 @@ function App() {
 
   // 初回マウント時に保存された設定を読み込む
   useEffect(() => {
-    const savedStructure = localStorage.getItem(STORAGE_KEY);
-    if (savedStructure) {
-      try {
+    try {
+      console.log('Loading structure from:', STORAGE_KEY);
+      const savedStructure = localStorage.getItem(STORAGE_KEY);
+      console.log('Loaded structure:', savedStructure);
+      
+      if (savedStructure) {
         const parsed = JSON.parse(savedStructure);
         setStructure(parsed);
-      } catch (error) {
-        console.error('Failed to load saved structure:', error);
+        console.log('Successfully loaded and parsed structure');
+      } else {
+        console.log('No saved structure found, using default');
       }
+    } catch (error) {
+      console.error('Failed to load saved structure:', error);
+      setStructure(DEFAULT_STRUCTURE);
     }
   }, []);
 
   // structureが変更されたときに自動保存
   useEffect(() => {
     try {
+      console.log('Saving structure to:', STORAGE_KEY);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(structure));
+      console.log('Successfully saved structure');
     } catch (error) {
       console.error('Failed to save structure:', error);
     }
