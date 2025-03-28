@@ -30,8 +30,9 @@ ${fieldDescriptions}
 - 日付範囲の場合、開始日と終了日を別々のフィールドに分けて出力
 - 数値は文字列ではなく数値型で出力
 - 抽出できない場合は空文字列や0ではなく、nullを設定
+- コードブロックやMarkdown記法は使用せず、純粋なJSONのみを返してください
 
-JSONの形式:
+応答形式:
 {
   "fields": {
     [フィールド名]: 値,
@@ -52,14 +53,15 @@ JSONの形式:
         messages: [
           {
             role: 'system',
-            content: 'あなたは正確なデータ抽出を行うアシスタントです。特に日付や数値の抽出を正確に行います。'
+            content: 'あなたは正確なデータ抽出を行うアシスタントです。特に日付や数値の抽出を正確に行います。応答は必ず純粋なJSONのみを返してください。Markdown記法は使用しないでください。'
           },
           {
             role: 'user',
             content: prompt
           }
         ],
-        temperature: 0.3, // より決定論的な応答を得るために温度を下げる
+        temperature: 0.3,
+        response_format: { type: "json_object" }  // JSON形式の応答を強制
       }),
     });
 
@@ -68,19 +70,30 @@ JSONの形式:
     }
 
     const data = await response.json();
-    const result = JSON.parse(data.choices[0].message.content);
+    let content = data.choices[0].message.content;
 
-    // 日付フィールドの形式を検証
-    structure.forEach(field => {
-      if (field.type === 'date' && result.fields[field.name]) {
-        const dateStr = result.fields[field.name];
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-          throw new Error(`Invalid date format for ${field.name}: ${dateStr}`);
+    // Markdownのコードブロックを削除
+    content = content.replace(/```json\n?|\n?```/g, '');
+
+    try {
+      const result = JSON.parse(content);
+
+      // 日付フィールドの形式を検証
+      structure.forEach(field => {
+        if (field.type === 'date' && result.fields[field.name]) {
+          const dateStr = result.fields[field.name];
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+            throw new Error(`Invalid date format for ${field.name}: ${dateStr}`);
+          }
         }
-      }
-    });
+      });
 
-    return result;
+      return result;
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      console.error('Raw content:', content);
+      throw new Error('APIからの応答をJSONとして解析できませんでした');
+    }
   } catch (error) {
     console.error('Error calling OpenAI API:', error);
     throw error;
