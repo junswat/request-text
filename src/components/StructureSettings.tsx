@@ -4,24 +4,51 @@ import { StructureField, DataType } from '../types';
 
 const STORAGE_KEY = 'structure_settings';
 
+// デフォルトの構造設定
+const DEFAULT_STRUCTURE: StructureField[] = [
+  { 
+    name: 'Title',
+    type: 'string',
+    description: 'タイトルまたは件名'
+  },
+  { 
+    name: 'Date_start',
+    type: 'date',
+    description: '開始日（YYYY-MM-DD形式）'
+  },
+  { 
+    name: 'Date_end',
+    type: 'date',
+    description: '終了日（YYYY-MM-DD形式）'
+  },
+  { 
+    name: 'requester',
+    type: 'string',
+    description: '依頼者名'
+  }
+];
+
 export default function StructureSettings() {
   const [fields, setFields] = useState<StructureField[]>([]);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    // 保存された設定を読み込む
+    // 保存された設定を読み込む、なければデフォルト設定を使用
     const savedStructure = localStorage.getItem(STORAGE_KEY);
     if (savedStructure) {
       try {
         setFields(JSON.parse(savedStructure));
       } catch (error) {
         console.error('Failed to load saved structure:', error);
+        setFields(DEFAULT_STRUCTURE);
       }
+    } else {
+      setFields(DEFAULT_STRUCTURE);
     }
   }, []);
 
   const addField = () => {
-    setFields([...fields, { name: '', type: 'string' }]);
+    setFields([...fields, { name: '', type: 'string', description: '' }]);
   };
 
   const removeField = (index: number) => {
@@ -56,6 +83,13 @@ export default function StructureSettings() {
                 onChange={(e) => updateField(index, { name: e.target.value })}
                 placeholder="フィールド名"
                 className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-500"
+              />
+              <input
+                type="text"
+                value={field.description || ''}
+                onChange={(e) => updateField(index, { description: e.target.value })}
+                placeholder="フィールドの説明（AIへの指示）"
+                className="w-full mt-2 px-3 py-2 border rounded-md focus:ring-2 focus:ring-indigo-500 text-sm"
               />
             </div>
             <div className="w-40">
