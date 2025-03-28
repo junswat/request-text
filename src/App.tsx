@@ -1,34 +1,61 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Settings, FileText, Key } from 'lucide-react';
 import StructureEditor from './components/StructureEditor';
 import TextAnalyzer from './components/TextAnalyzer';
 import ApiSettings from './components/ApiSettings';
 import { StructureField } from './types';
 
+// デフォルトの構造設定
+const DEFAULT_STRUCTURE: StructureField[] = [
+  { 
+    name: 'Title',
+    type: 'string',
+    description: 'タイトルまたは件名'
+  },
+  { 
+    name: 'Date_start',
+    type: 'date',
+    description: '開始日（YYYY-MM-DD形式）'
+  },
+  { 
+    name: 'Date_end',
+    type: 'date',
+    description: '終了日（YYYY-MM-DD形式）'
+  },
+  { 
+    name: 'requester',
+    type: 'string',
+    description: '依頼者名'
+  }
+];
+
+const STORAGE_KEY = 'text_analyzer_structure';
+
 function App() {
   const [activeTab, setActiveTab] = useState<'structure' | 'analyze' | 'settings'>('structure');
-  const [structure, setStructure] = useState<StructureField[]>([
-    { 
-      name: 'Title',
-      type: 'string',
-      description: 'タイトルまたは件名'
-    },
-    { 
-      name: 'Date_start',
-      type: 'date',
-      description: '開始日（YYYY-MM-DD形式）'
-    },
-    { 
-      name: 'Date_end',
-      type: 'date',
-      description: '終了日（YYYY-MM-DD形式）'
-    },
-    { 
-      name: 'requester',
-      type: 'string',
-      description: '依頼者名'
+  const [structure, setStructure] = useState<StructureField[]>(DEFAULT_STRUCTURE);
+
+  // 初回マウント時に保存された設定を読み込む
+  useEffect(() => {
+    const savedStructure = localStorage.getItem(STORAGE_KEY);
+    if (savedStructure) {
+      try {
+        const parsed = JSON.parse(savedStructure);
+        setStructure(parsed);
+      } catch (error) {
+        console.error('Failed to load saved structure:', error);
+      }
     }
-  ]);
+  }, []);
+
+  // structureが変更されたときに自動保存
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(structure));
+    } catch (error) {
+      console.error('Failed to save structure:', error);
+    }
+  }, [structure]);
 
   return (
     <div className="min-h-screen bg-gray-50">
