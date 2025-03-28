@@ -8,10 +8,26 @@ import { StructureField } from './types';
 function App() {
   const [activeTab, setActiveTab] = useState<'structure' | 'analyze' | 'settings'>('structure');
   const [structure, setStructure] = useState<StructureField[]>([
-    { name: 'Title', type: 'string' },
-    { name: 'Date', type: 'date' },
-    { name: 'Amount', type: 'number' },
-    { name: 'IsActive', type: 'boolean' }
+    { 
+      name: 'Title',
+      type: 'string',
+      description: 'タイトルまたは件名'
+    },
+    { 
+      name: 'Date_start',
+      type: 'date',
+      description: '開始日（YYYY-MM-DD形式）'
+    },
+    { 
+      name: 'Date_end',
+      type: 'date',
+      description: '終了日（YYYY-MM-DD形式）'
+    },
+    { 
+      name: 'requester',
+      type: 'string',
+      description: '依頼者名'
+    }
   ]);
 
   return (
