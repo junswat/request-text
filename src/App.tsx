@@ -34,7 +34,7 @@ const BASE_PATH = '/request-text';
 const STORAGE_KEY = `${BASE_PATH}/text_analyzer_structure`;
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'structure' | 'analyze' | 'settings'>('structure');
+  const [activeTab, setActiveTab] = useState<'structure' | 'analyze' | 'settings'>('analyze');
   const [structure, setStructure] = useState<StructureField[]>(DEFAULT_STRUCTURE);
 
   // 初回マウント時に保存された設定を読み込む

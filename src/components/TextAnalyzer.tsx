@@ -53,10 +53,11 @@ export default function TextAnalyzer({ structure }: TextAnalyzerProps) {
     if (!result) return;
     
     try {
-      // Create a tab-separated string of field values
-      const fieldValues = structure
-        .map(field => result.fields[field.name])
-        .join('\t');
+      // Create a tab-separated string of field values including the original text
+      const fieldValues = [
+        ...structure.map(field => result.fields[field.name]),
+        result.memo // 元のテキストを追加
+      ].join('\t');
       
       await navigator.clipboard.writeText(fieldValues);
       setCopied(true);
