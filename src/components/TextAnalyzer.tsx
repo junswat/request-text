@@ -56,7 +56,7 @@ export default function TextAnalyzer({ structure }: TextAnalyzerProps) {
       // Create a tab-separated string of field values including the original text
       const fieldValues = [
         ...structure.map(field => result.fields[field.name]),
-        result.memo // 元のテキストを追加
+        result.memo.replace(/\n/g, ' ') // 改行を半角スペースに置換
       ].join('\t');
       
       await navigator.clipboard.writeText(fieldValues);
