@@ -43,7 +43,7 @@ function SortableField({ field, index, updateField, removeField, error }: {
     setNodeRef,
     transform,
     transition,
-  } = useSortable({ id: field.name });
+  } = useSortable({ id: index });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -120,8 +120,8 @@ export default function StructureEditor({ structure, setStructure }: StructureEd
     const { active, over } = event;
     
     if (over && active.id !== over.id) {
-      const oldIndex = structure.findIndex((item) => item.name === active.id);
-      const newIndex = structure.findIndex((item) => item.name === over.id);
+      const oldIndex = active.id as number;
+      const newIndex = over.id as number;
       
       setStructure(arrayMove(structure, oldIndex, newIndex));
     }
@@ -217,12 +217,12 @@ export default function StructureEditor({ structure, setStructure }: StructureEd
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={structure.map(item => item.name)}
+            items={structure.map((_, index) => index)}
             strategy={verticalListSortingStrategy}
           >
             {structure.map((field, index) => (
               <SortableField
-                key={field.name || index}
+                key={index}
                 field={field}
                 index={index}
                 updateField={updateField}
