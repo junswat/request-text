@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, FileText, Key } from 'lucide-react';
+import { Settings, FileText, Key, LogOut } from 'lucide-react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import StructureEditor from './components/StructureEditor';
 import TextAnalyzer from './components/TextAnalyzer';
 import ApiSettings from './components/ApiSettings';
+import { Login } from './components/Login';
+import { AuthCallback } from './components/AuthCallback';
+import { PrivateRoute } from './components/PrivateRoute';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { StructureField } from './types';
 
 // デフォルトの構造設定
@@ -33,9 +38,10 @@ const DEFAULT_STRUCTURE: StructureField[] = [
 const BASE_PATH = '/request-text';
 const STORAGE_KEY = `${BASE_PATH}/text_analyzer_structure`;
 
-function App() {
+function AppContent() {
   const [activeTab, setActiveTab] = useState<'structure' | 'analyze' | 'settings'>('analyze');
   const [structure, setStructure] = useState<StructureField[]>(DEFAULT_STRUCTURE);
+  const { signOut } = useAuth();
 
   // 初回マウント時に保存された設定を読み込む
   useEffect(() => {
@@ -75,7 +81,7 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <h1 className="text-2xl font-bold text-gray-900">Text Structure Analyzer</h1>
-            <nav className="flex space-x-4">
+            <nav className="flex space-x-4 items-center">
               <button
                 onClick={() => setActiveTab('structure')}
                 className={'px-3 py-2 rounded-md ' + (activeTab === 'structure' ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100') + ' flex items-center gap-2'}
@@ -97,6 +103,13 @@ function App() {
                 <Key size={20} />
                 API Settings
               </button>
+              <button
+                onClick={signOut}
+                className="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+              >
+                <LogOut size={20} />
+                ログアウト
+              </button>
             </nav>
           </div>
         </div>
@@ -115,6 +128,28 @@ function App() {
         )}
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router basename="/request-text">
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <AppContent />
+              </PrivateRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
+    </Router>
   );
 }
 
